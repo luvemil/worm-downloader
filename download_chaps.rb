@@ -10,6 +10,9 @@ paths = ObjectStash.load 'files/paths.stash'
 err = []
 
 paths.each do |path|
+  # Ensure that path ends in "/"
+  path = (path+'/').gsub('//','/')
+
   # Get a string to name a chapter from its path
   path_splitted = path.split('/')
   n = path_splitted.size - 1 
@@ -27,6 +30,7 @@ paths.each do |path|
       ObjectStash.store chapter_node.content.to_s, filename
     else
       File::new "files/err/#{path_splitted[n]}", "w"
+      puts path+" Not Found"
       err << path
     end
       
