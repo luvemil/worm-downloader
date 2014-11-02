@@ -9,6 +9,7 @@ module Worm
   CHAPTERS_HTML_HOLDER = "files/html"
 
   def self.download_chapter path
+    puts "Download #{path}"
     return Net::HTTP.get URL, path
   end
 end
