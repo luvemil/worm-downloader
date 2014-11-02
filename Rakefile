@@ -4,19 +4,25 @@ require './worm'
 task :toc => Worm::TOC_HTML
 task :urls => Worm::PATHS
 
+## begin -- Get Table of Contents
 file Worm::TOC_HTML do
   mkdir_p Worm::TOC_HTML.pathmap('%d')
   ruby 'download_toc.rb'
 end
+## end -- Get Table of Contents
  
+## begin -- Get chapters' urls from Table of Contents
 file Worm::PATHS => Worm::TOC_HTML do
   ruby 'parse_chapters_urls.rb'
 end
+## end
 
+## begin -- build chapter list
 desc "building #{Worm::CHAPTERS}"
 task :chapters => Worm::CHAPTERS 
 
 file Worm::CHAPTERS => Worm::PATHS do
+  puts "Doing #{Worm::CHAPTERS}"
   paths = Marshal.load IO.read(Worm::PATHS)
   chapters = {
     :paths => paths,
@@ -28,37 +34,39 @@ file Worm::CHAPTERS => Worm::PATHS do
   end
   IO.write Worm::CHAPTERS, Marshal.dump(chapters)
 end
+## end
 
-
-task :test_chapters => Worm::CHAPTERS do
-  chapters = Marshal.load IO.read(Worm::CHAPTERS)
-  chapters[:names].each {|n| puts chapters[:links][n]}
-end
-
+## begin -- download each chapter, need debug
 task :get_chapters => Worm::CHAPTERS do
   chapters = Marshal.load IO.read(Worm::CHAPTERS)
   chapters_dir = Worm::CHAPTERS_HTML_HOLDER
   mkdir_p chapters_dir
-  SOURCE_FILES = FileList.new(chapters[:names])
-  SOURCE_FILES.pathmap("#{chapters_dir}/%f.html").each do |name|
-    path = chapters[:links][name.pathmap("%n")]
-    IO.write name, Worm::download_chapter(path)
+  SOURCES = FileList.new(chapters[:names]).each do |fl|
+    name = fl.pathmap("#{chapters_dir}/%f.html")
+#    file name do
+      puts "Doing #{name.pathmap("%n")}"
+      path = chapters[:links][name.pathmap("%n")]
+      IO.write name, Worm::download_chapter(path)
+#    end
   end
 end
+## end
 
+## begin -- get text from chapter.html
+#  The skeleton works. Need body.
 source_files = FileList.new("#{Worm::CHAPTERS_HTML_HOLDER}/*.html")
+parsed_files = source_files.pathmap("#{Worm::CHAPTERS_TEXT_DIR}/%n.parsed")
 
-parsed_files = source_files.pathmap("#{Worm::CHAPTERS_TEXT_DIR}/%n")
+task :get_text => parsed_files  
 
-task :get_text => parsed_files
-
-
-
-#nope
-task :get_text => :get_chapters do
-  chapters = Marshal.load IO.read(Worm::CHAPTERS)
-  text_dir = Worm::CHAPTERS_TEXT_DIR
-  chapters_dir = Worm::CHAPTERS_HTML_HOLDER
-  mkdir_p text_dir
-  SOURCE_FILES = FileList.new(chapters[:names]).pathmap("#{chapters_dir}/%n.html")
+rule ".parsed" => ->(f){source_file(f)} do |t|
+  puts "Found #{t}"
+  # Here goes the script
+  # something like ruby "parse_html.rb #{source_file(t)}"
 end
+
+def source_file f
+  return f.pathmap("#{Worm::CHAPTERS_HTML_HOLDER}/%n.html")
+end
+## end
+ 

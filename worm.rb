@@ -7,6 +7,7 @@ module Worm
   PATHS = "files/paths"
   CHAPTERS = "files/chapters"
   CHAPTERS_HTML_HOLDER = "files/html"
+  CHAPTERS_TEXT_DIR = "files/contents"
 
   def self.download_chapter path
     puts "Download #{path}"
