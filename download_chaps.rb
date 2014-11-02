@@ -4,8 +4,11 @@ require 'nokogiri'
 
 url = 'parahumans.wordpress.com' 
 article_tag = "//div[@class='entry-content']"
+title_tag = "//h1[@class='entry-title']"
 
 paths = ObjectStash.load 'files/paths.stash'
+
+chapter_names = Hash.new
 
 err = []
 
@@ -17,13 +20,20 @@ paths.each do |path|
   path_splitted = path.split('/')
   n = path_splitted.size - 1 
   filename = "files/chapters/#{path_splitted[n]}.stash"
+  htmlfile = "files/html/#{path_splitted[n]}.stash"
 
   unless File::exists? filename
     # Get the html and transform into a NodeSet
-    source = Net::HTTP.get url, path
+    if File::exists? htmlfile
+      source = ObjectStash.load htmlfile
+    else
+      source = Net::HTTP.get url, path
+      ObjectStash.store source, htmlfile
+    end
     doc = Nokogiri::HTML source
 
     # Parse the NodeSet
+    chapter_names[path] = doc.xpath(title_tag)[0].content
     chapter_node = doc.xpath(article_tag)[0]
 
     if chapter_node
@@ -37,6 +47,8 @@ paths.each do |path|
   end
 
   ObjectStash.store err, "files/err.stash"
+  # aggiungi una chiamata per salvare chapter_names su disco
+  # e magari modifica il controllo su per farlo checkare
 
 end
 
