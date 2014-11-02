@@ -58,7 +58,6 @@ end
 ## end
 
 ## begin -- get text from chapter.html
-#  The skeleton works. Need body.
 source_files = FileList.new("#{Worm::CHAPTERS_HTML_HOLDER}/*.html")
 parsed_files = source_files.pathmap("#{Worm::CHAPTERS_TEXT_DIR}/%n.parsed")
 
