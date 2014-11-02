@@ -35,17 +35,23 @@ file Worm::CHAPTERS => Worm::PATHS do
 end
 ## end
 
-## begin -- download each chapter, need debug
-task :get_chapters => Worm::CHAPTERS do
+
+
+## begin -- download chapters, require two runs
+if File.exists?(Worm::CHAPTERS) 
   chapters = Marshal.load IO.read(Worm::CHAPTERS)
   chapters_dir = Worm::CHAPTERS_HTML_HOLDER
   mkdir_p chapters_dir
   SOURCES = FileList.new(chapters[:names])
-  SOURCES.pathmap("#{chapters_dir}/%f.html").each do |name|
-    puts "Doing #{name.pathmap("%n")}"
-    path = chapters[:links][name.pathmap("%n")]
-    IO.write name, Worm::download_chapter(path)
-  end
+  OUTPUTS = SOURCES.pathmap("#{chapters_dir}/%f.html")
+  task :new_get_char => OUTPUTS
+end
+
+rule ".html" do |t|
+  name = t.name
+  puts "Doing #{name.pathmap("%n")}"
+  path = chapters[:links][name.pathmap("%n")]
+  IO.write name, Worm::download_chapter(path)
 end
 ## end
 
