@@ -41,13 +41,11 @@ task :get_chapters => Worm::CHAPTERS do
   chapters = Marshal.load IO.read(Worm::CHAPTERS)
   chapters_dir = Worm::CHAPTERS_HTML_HOLDER
   mkdir_p chapters_dir
-  SOURCES = FileList.new(chapters[:names]).each do |fl|
-    name = fl.pathmap("#{chapters_dir}/%f.html")
-#    file name do
-      puts "Doing #{name.pathmap("%n")}"
-      path = chapters[:links][name.pathmap("%n")]
-      IO.write name, Worm::download_chapter(path)
-#    end
+  SOURCES = FileList.new(chapters[:names])
+  SOURCES.pathmap("#{chapters_dir}/%f.html").each do |name|
+    puts "Doing #{name.pathmap("%n")}"
+    path = chapters[:links][name.pathmap("%n")]
+    IO.write name, Worm::download_chapter(path)
   end
 end
 ## end
