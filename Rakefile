@@ -44,7 +44,9 @@ if File.exists?(Worm::CHAPTERS)
   mkdir_p chapters_dir
   SOURCES = FileList.new(chapters[:names])
   OUTPUTS = SOURCES.pathmap("#{chapters_dir}/%f.html")
-  task :new_get_char => OUTPUTS
+  task :get_chapters => OUTPUTS
+else
+  task :get_chapters
 end
 
 rule ".html" do |t|
@@ -73,4 +75,4 @@ def source_file f
 end
 ## end
  
-task :default => [:chapters, :get_text]
+task :default => [:chapters, :get_chapters, :get_text]
