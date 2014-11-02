@@ -3,6 +3,8 @@ require './worm'
 
 task :toc => Worm::TOC_HTML
 task :urls => Worm::PATHS
+desc "building #{Worm::CHAPTERS}"
+task :chapters => Worm::CHAPTERS 
 
 ## begin -- Get Table of Contents
 file Worm::TOC_HTML do
@@ -18,9 +20,6 @@ end
 ## end
 
 ## begin -- build chapter list
-desc "building #{Worm::CHAPTERS}"
-task :chapters => Worm::CHAPTERS 
-
 file Worm::CHAPTERS => Worm::PATHS do
   puts "Doing #{Worm::CHAPTERS}"
   paths = Marshal.load IO.read(Worm::PATHS)
@@ -58,9 +57,9 @@ parsed_files = source_files.pathmap("#{Worm::CHAPTERS_TEXT_DIR}/%n.parsed")
 task :get_text => parsed_files  
 
 rule ".parsed" => ->(f){source_file(f)} do |t|
+  mkdir_p "#{t.name.pathmap("%d")}"
   puts "Found #{t}"
-  # Here goes the script
-  # something like ruby "parse_html.rb #{source_file(t)}"
+  ruby "parse_html.rb #{t.source}"
 end
 
 def source_file f
@@ -68,3 +67,4 @@ def source_file f
 end
 ## end
  
+task :default => [:chapters, :get_text]
