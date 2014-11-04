@@ -35,8 +35,6 @@ file Worm::CHAPTERS => Worm::PATHS do
 end
 ## end
 
-
-
 ## begin -- download chapters, require two runs
 if File.exists?(Worm::CHAPTERS) 
   chapters = Marshal.load IO.read(Worm::CHAPTERS)
@@ -71,6 +69,19 @@ end
 
 def source_file f
   return f.pathmap("#{Worm::CHAPTERS_HTML_HOLDER}/%n.html")
+end
+## end
+
+## begin -- make md files for softcover from html
+#  uses source_files defined above
+md_files = source_files.pathmap("#{Worm::BOOK_DIR}/%n.md")
+
+task :get_md => md_files
+
+rule ".md" => ->(f){source_file(f)} do |t|
+  mkdir_p "#{t.name.pathmap("%d")}"
+  puts "Making #{t.name}"
+  ruby "md_builder.rb #{t.source} >> #{t.name}"
 end
 ## end
  
