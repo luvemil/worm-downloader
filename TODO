@@ -1,0 +1,4 @@
+Add to Rakefile a method to deliver all the stuff needed
+for softcover
+
+Make a script to automate softcover build:mobi (or whatever)
