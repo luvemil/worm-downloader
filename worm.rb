@@ -8,6 +8,7 @@ module Worm
   CHAPTERS = "files/chapters"
   CHAPTERS_HTML_HOLDER = "files/html"
   CHAPTERS_TEXT_DIR = "files/contents"
+  BOOK = "files/book/Book.txt"
   BOOK_DIR = "files/book/chapters"
 
   def self.download_chapter path

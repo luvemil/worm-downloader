@@ -74,6 +74,8 @@ end
 
 ## begin -- make md files for softcover from html
 #  uses source_files defined above
+#  TODO: run sc new files/book from Rakefile
+#  (need to be sure it runs only once)
 md_files = source_files.pathmap("#{Worm::BOOK_DIR}/%n.md")
 
 task :get_md => md_files
@@ -81,8 +83,14 @@ task :get_md => md_files
 rule ".md" => ->(f){source_file(f)} do |t|
   mkdir_p "#{t.name.pathmap("%d")}"
   puts "Making #{t.name}"
-  ruby "md_builder.rb #{t.source} >> #{t.name}"
+  ruby "md_builder.rb #{t.source} > #{t.name}"
 end
 ## end
+
+## deploy book
+task :sc_deploy => [ :get_md, Worm::CHAPTERS ] do
+  sh "mv #{Worm::BOOK}\{,.bak\}" if File.exists?(Worm::BOOK)
+  ruby "update_book.rb #{Worm::BOOK}"
+end
  
-task :default => [:chapters, :get_chapters, :get_text]
+task :default => [:chapters, :get_chapters, :get_text, :get_md]
