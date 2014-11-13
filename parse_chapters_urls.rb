@@ -25,4 +25,5 @@ end
 paths = links.map { |link| link.gsub(Worm::URL,'').gsub('http://','') }
 #ensure that each path ends in /
 paths = paths.map{|path| "#{path}/".gsub("//","/")}
+paths.uniq!
 IO.write Worm::PATHS, Marshal.dump(paths)
