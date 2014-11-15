@@ -7,8 +7,8 @@ desc "building #{Worm::CHAPTERS}"
 task :chapters => Worm::CHAPTERS 
 
 ## begin -- Get Table of Contents
-file Worm::TOC_HTML do
-  mkdir_p Worm::TOC_HTML.pathmap('%d')
+directory Worm::TOC_HTML.pathmap('%d')
+file Worm::TOC_HTML => Worm::TOC_HTML.pathmap('%d') do
   ruby 'download_toc.rb'
 end
 ## end -- Get Table of Contents
@@ -39,10 +39,10 @@ end
 if File.exists?(Worm::CHAPTERS) 
   chapters = Marshal.load IO.read(Worm::CHAPTERS)
   chapters_dir = Worm::CHAPTERS_HTML_HOLDER
-  mkdir_p chapters_dir
+  directory chapters_dir
   SOURCES = FileList.new(chapters[:names])
   OUTPUTS = SOURCES.pathmap("#{chapters_dir}/%f.html")
-  task :get_chapters => OUTPUTS
+  task :get_chapters => [ chapters_dir ] + OUTPUTS
 else
   task :get_chapters
 end
@@ -56,13 +56,13 @@ end
 ## end
 
 ## begin -- get text from chapter.html
+directory Worm::CHAPTERS_TEXT_DIR
 source_files = FileList.new("#{Worm::CHAPTERS_HTML_HOLDER}/*.html")
 parsed_files = source_files.pathmap("#{Worm::CHAPTERS_TEXT_DIR}/%n.parsed")
 
-task :get_text => parsed_files  
+task :get_text => [ Worm::CHAPTERS_TEXT_DIR ] + parsed_files  
 
 rule ".parsed" => ->(f){source_file(f)} do |t|
-  mkdir_p "#{t.name.pathmap("%d")}"
   puts "Found #{t}"
   ruby "parse_html.rb #{t.source}"
 end
@@ -76,19 +76,20 @@ end
 #  uses source_files defined above
 #  TODO: run sc new files/book from Rakefile
 #  (need to be sure it runs only once)
+directory Worm::BOOK_DIR
 md_files = source_files.pathmap("#{Worm::BOOK_DIR}/%n.md")
 
-task :get_md => md_files
+task :get_md => [ Worm::BOOK_DIR ] + md_files
 
 rule ".md" => ->(f){source_file(f)} do |t|
-  mkdir_p "#{t.name.pathmap("%d")}"
   puts "Making #{t.name}"
   ruby "md_builder.rb #{t.source} > #{t.name}"
 end
 ## end
 
 ## deploy book
-task :sc_deploy => [ :get_md, Worm::CHAPTERS ] do
+directory Worm::BOOK.pathmap("%d")
+task :sc_deploy => [ :get_md, Worm::CHAPTERS, Worm::BOOK.pathmap("%d") ] do
   sh "mv #{Worm::BOOK}\{,.bak\}" if File.exists?(Worm::BOOK)
   ruby "update_book.rb #{Worm::BOOK}"
 end
