@@ -10,6 +10,8 @@
 require './worm'
 require 'rake'
 require 'nokogiri'
+# Ask user input
+#require 'highline/import'
 
 chapters = Marshal.load(IO.read(Worm::CHAPTERS))
 
@@ -31,6 +33,9 @@ ATTRIBUTES = {
   "div" => %W[id class data-src data-name style],
   "address" => ["style"]
 }
+NONP_TAGS = %W[span li ul h3 div em address strong blockquote]
+P_TAGS = %W[em br del strong span i b]
+NONP_ONLY_TAGS = NONP_TAGS - P_TAGS
 
 def count_stuff(html)
   doc = Nokogiri::HTML IO.read(html)
@@ -94,8 +99,8 @@ def search_tags html_files
   html_files.each do |file|
     doc = Nokogiri::HTML IO.read(file)
     # Uncomment to search only inside p tags
-    #doc.css("div.entry-content p").each do |node|
-    doc.css("div.entry-content").each do |node|
+    doc.css("div.entry-content p").each do |node|
+    #doc.css("div.entry-content").each do |node|
       tags_array += get_all_tags(node)
       tags_array = tags_array.uniq
     end
@@ -132,9 +137,97 @@ def search_attributes html_files
   end
 end
 
+# Try to figure out what to do with tags outside <p></p>
+def is_in_p node, root
+  if node.parent.name == "p"
+    return true
+  elsif node.parent == root
+    return false
+  end
+  return is_in_p node.parent, root
+end
+
+def search_nonp_tags html_files
+  nonp_tags = []
+  html_files.each do |file|
+    doc = Nokogiri::HTML IO.read(file)
+    root = doc.css("div.entry-content")[0]
+    TAGS.each do |tag|
+      root.css(tag).each do |node|
+        unless is_in_p( node, root )
+          nonp_tags << tag
+        end
+      end
+      nonp_tags = nonp_tags.uniq
+    end
+  end
+  puts "Tags outside <p></p> are:"
+  puts nonp_tags
+end
+
+# Shows the content of a node on request, uses the auxiliary function
+def prompt(*args)
+    print(*args)
+    gets
+end
+
+def show_content node
+  input = prompt "Found #{node.name} tag, show? "
+  puts "#{node.text}" unless input == "N"
+  input = prompt "Continue:"
+end
+
+# Manipulates contents inside nonp_tags
+def nonp_tags_content html_files
+  nonp_content = {}
+  html_files.each do |file|
+    doc = Nokogiri::HTML IO.read(file)
+    root = doc.css("div.entry-content")[0]
+    NONP_TAGS.each do |tag|
+      nonp_content[tag]=[]
+      root.css(tag).each do |node|
+        if NONP_ONLY_TAGS.include? tag
+          nonp_content[tag] << node.text
+          #show_content node
+        else
+          unless is_in_p(node, root)
+            nonp_content[tag] << node.text
+            #show_content node
+          end
+        end
+        nonp_content[tag] = nonp_content[tag].uniq
+      end
+    end
+  end
+  NONP_TAGS.each do |tag|
+    prompt "Showing content for #{tag} tag: "
+    puts nonp_content[tag]
+  end
+  #ObjectStash.store  ObjectStash.store nonp_content, "nonp_content.stash"
+end
+
+
+
+# Is there any html_file with multiple div.entry-content?
+# Answer: No!
+def multiple_div html_files
+  multiple = []
+  html_files.each do |file|
+    doc = Nokogiri::HTML IO.read(file)
+    if doc.css("div.entry-content").size > 1
+      multiple << file.pathmap("%n")
+    end
+  end
+  if multiple == []
+    puts "No multiple div.entry-content"
+  else
+    puts multiple
+  end
+end
+
 
 def main html_files
-  search_attributes html_files
+  search_tags html_files
 end
 
 main html_files
