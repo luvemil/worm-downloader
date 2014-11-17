@@ -28,8 +28,11 @@ def show_me node
   return strings
 end
 
-puts "\##{doc.css(TITLE_TAG).text}\n"
-root.css("p").each do |node|
-  puts parse(node) unless node.css("a").size > 0
-  puts ""
-end
+puts "\##{doc.css(TITLE_TAG).text}\n\n"
+#root.css("p").each do |node|
+  #puts parse(node) unless node.css("a").size > 0
+  #puts ""
+#end
+
+Worm::parse root
+
