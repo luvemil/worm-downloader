@@ -105,7 +105,7 @@ end
     
 
 def main html_files
-  wheres_the_attribute html_files
+  find_attribute_values html_files
 end
 
-main html_files
+main ARGV
