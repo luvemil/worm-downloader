@@ -93,7 +93,9 @@ def is_in_here target, root
 end
 def wheres_the_attribute html_files
   # attribute = [tag, attribute, value]
-  target = ["span", "style", '"color:#333333;font-style:normal;line-height:24px;"']
+  #target = ["span", "style", '"color:#333333;font-style:normal;line-height:24px;"']
+  att = Worm::ATTRIBUTES
+  target = ["p","style",att["p"]["style"][3] ]
   html_files.each do |file|
     doc = Nokogiri::HTML IO.read(file)
     root = doc.css(ROOT_TAG)
