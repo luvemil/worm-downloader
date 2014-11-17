@@ -19,17 +19,16 @@ module Worm
   def self.show_me node
     strings = ""
     node.children.each do |child|
-      if child.text == ""
-      else 
-        strings += self.convert(child)
-      end
+      strings += self.convert(child)
     end
     return strings
   end 
 
   def self.show_text node
-    # Here we do some basic escape to avoid issues
-    return node.text.gsub('*','\*')
+    # Here we do some basic escape to avoid issues.
+    # This is intended as a substitution done *before* any parsing has
+    # happened.
+    return node.text.gsub('*', '\*')
   end
 
   def self.convert child
@@ -37,15 +36,24 @@ module Worm
     # Assumes the input is a well formatted HTML snippet, i.e. no
     # nested <strong> or <em>
     tag = child.name
-    if tag == "em"
-      return "_#{self.show_me(child)}_"
+    # First we go with tags that can be empty
+    if tag == "br"
+      return "#{self.show_me(child)}\\\\"
+    # Now everything from here on must have content
+    elsif child.text == ""
+      return ""
+    elsif tag == "em"
+      return "_#{self.show_me(child).strip}_"
     elsif tag == "strong"
-      return  "**#{self.show_me(child)}**"
+      return  "**#{self.show_me(child).strip}**"
     elsif tag == "text"
       return self.show_text(child)
-    elsif tag == "br"
-      return "#{self.show_me(child)}\\"
     elsif tag == "p"
+      # Here goes everything to do with p tags... maybe this deserves
+      # its own function.
+      if child["style"] == 'padding-left:30px;'
+        return ">#{self.show_me(child)}\n\n"
+      end
       return "#{self.show_me(child)}\n\n"
     end
     return self.show_text(child)
@@ -53,7 +61,8 @@ module Worm
 
   def self.parse root
     root.css("p").each do |node|
-      print self.convert(node) unless node.css("a").size > 0
+      # We do some postproduction here
+      print self.convert(node).gsub('****','') unless node.css("a").size > 0
     end
   end
 
