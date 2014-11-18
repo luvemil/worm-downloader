@@ -95,7 +95,7 @@ def wheres_the_attribute html_files
   # attribute = [tag, attribute, value]
   #target = ["span", "style", '"color:#333333;font-style:normal;line-height:24px;"']
   att = Worm::ATTRIBUTES
-  target = ["p","style",att["p"]["style"][3] ]
+  target = ["strong","style",att["p"]["style"][0] ]
   html_files.each do |file|
     doc = Nokogiri::HTML IO.read(file)
     root = doc.css(ROOT_TAG)
@@ -106,6 +106,7 @@ end
 
 def main html_files
   find_attribute_values html_files
+  #wheres_the_attribute html_files
 end
 
 main ARGV
