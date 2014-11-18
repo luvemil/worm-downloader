@@ -51,7 +51,7 @@ module Worm
     elsif tag == "p"
       # Here goes everything to do with p tags... maybe this deserves
       # its own function.
-      if child["style"] == 'padding-left:30px;'
+      if child["style"] == 'padding-left:30px;' or child["style"] == 'text-align:left;padding-left:30px;' or child["style"] == 'padding-left:60px;'
         return ">#{self.show_me(child)}\n\n"
       end
       return "#{self.show_me(child)}\n\n"
