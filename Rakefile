@@ -83,7 +83,8 @@ task :get_md => [ Worm::BOOK_DIR ] + md_files
 
 rule ".md" => ->(f){source_file(f)} do |t|
   puts "Making #{t.name}"
-  ruby "md_builder.rb #{t.source} > #{t.name}"
+  #ruby "md_builder.rb #{t.source} > #{t.name}"
+  ruby "parse_md.rb #{t.source} > #{t.name}"
 end
 ## end
 
