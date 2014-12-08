@@ -43,9 +43,9 @@ module Worm
     elsif child.text == ""
       return ""
     elsif tag == "em"
-      return "_#{self.show_me(child).strip}_"
+      return "_#{self.show_me(child).strip}_ ".gsub("  "," ")
     elsif tag == "strong"
-      return  "**#{self.show_me(child).strip}**"
+      return  "**#{self.show_me(child).strip}** ".gsub("  "," ")
     elsif tag == "text"
       return self.show_text(child)
     elsif tag == "p"
