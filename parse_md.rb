@@ -36,9 +36,9 @@ def convert child
   elsif child.text == ""
     return ""
   elsif tag == "em"
-    return "_#{show_me(child).strip}_ ".gsub("  "," ")
+    return "_#{show_me(child).strip}_ "
   elsif tag == "strong"
-    return  "**#{show_me(child).strip}** ".gsub("  "," ")
+    return  "**#{show_me(child).strip}** "
   elsif tag == "text"
     return show_text(child)
   elsif tag == "p"
@@ -52,10 +52,19 @@ def convert child
   return show_text(child)
 end
 
+def post_production string
+  tmp = string.gsub('****','')
+  tmp = tmp.gsub("  "," ")
+  # Remove space before right double quotation mark
+  tmp = tmp.gsub(" \u{201d}","\u{201d}")
+  tmp = tmp.gsub(" \u{201c}","\u{201c}")
+  return tmp
+end
+
 def parse root
   root.css("p").each do |node|
     # We do some postproduction here
-    print convert(node).gsub('****','') unless node.css("a").size > 0
+    print post_production(convert(node)) unless node.css("a").size > 0
   end
 end
 
