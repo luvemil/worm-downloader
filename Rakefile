@@ -91,7 +91,7 @@ end
 ## deploy book
 directory Worm::BOOK.pathmap("%d")
 task :sc_deploy => [ :get_md, Worm::CHAPTERS, Worm::BOOK.pathmap("%d") ] do
-  sh "mv #{Worm::BOOK}\{,.bak\}" if File.exists?(Worm::BOOK)
+  #sh "mv #{Worm::BOOK}\{,.bak\}" if File.exists?(Worm::BOOK)
   ruby "update_book.rb #{Worm::BOOK}"
 end
  
