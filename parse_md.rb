@@ -55,6 +55,9 @@ end
 def post_production string
   tmp = string.gsub('****','')
   tmp = tmp.gsub("  "," ")
+  tmp = tmp.gsub(" ?","?")
+  tmp = tmp.gsub(" ,",",")
+  tmp = tmp.gsub(" .",".")
   # Remove space before right double quotation mark
   tmp = tmp.gsub(" \u{201d}","\u{201d}")
   tmp = tmp.gsub(" \u{201c}","\u{201c}")
